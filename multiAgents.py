@@ -282,8 +282,23 @@ def betterEvaluationFunction(currentGameState: GameState):
     evaluation function (question 5).
 
     DESCRIPTION: <write something here so we know what you did>
+    
+    I evaluate states using a combination of the current score,
+    distance to the nearest food, how much food is left, ghost proximity
+    based on whether theyre scared or not, and capsule proximity. The weights
+    were tuned by playing around with values. Ghost danger is weighted heavily
+    since dying costs 500 points, and scared ghosts are worth chasing since
+    they give 200 points each.
+    
     """
     "*** YOUR CODE HERE ***"
+    # check terminal states before doing anything else
+    # avoids issues with empty food lists in win states
+    if currentGameState.isWin():
+        return float('inf')
+    if currentGameState.isLose():
+        return float('-inf')
+    
     # Extract useful information from current state
     pos = currentGameState.getPacmanPosition()
     foodGrid = currentGameState.getFood()
@@ -291,41 +306,28 @@ def betterEvaluationFunction(currentGameState: GameState):
     ghostStates = currentGameState.getGhostStates()
     capsules = currentGameState.getCapsules()
     score = currentGameState.getScore()
+    
+    # pull pacman toward nearest food using reciprocal distance
+    closestFood = min(manhattanDistance(pos, f) for f in foodList)
+    foodScore = 10.0 / closestFood
 
-    # Terminal states
-    if currentGameState.isWin():
-        return float('inf')
-    if currentGameState.isLose():
-        return float('-inf')
-
-    # --- Food Feature ---
-    # Closer to nearest food is better, reciprocal so closer = higher value
-    foodDistances = [manhattanDistance(pos, f) for f in foodList]
-    closestFoodScore = 10.0 / min(foodDistances)
-
-    # Penalize having lots of food remaining - we want to eat it all
+    # fewer remaining food pellets = closer to winning
     remainingFoodPenalty = -4 * len(foodList)
 
-    # --- Ghost Features ---
     ghostScore = 0
     for ghost in ghostStates:
         dist = manhattanDistance(pos, ghost.getPosition())
         if ghost.scaredTimer > 0:
-            # Scared ghost = opportunity, get closer for more points
             ghostScore += 200.0 / (dist + 1)
-        else:
-            # Increased radius from 3 to 5, and stronger penalty
-            if dist < 5:
-                ghostScore -= 1000.0 / (dist + 1)
+        elif dist < 5:
+            # weight is high because dying is -500, need this to outweigh food signals
+            ghostScore -= 1000.0 / (dist + 1)
 
-    # --- Capsule Feature ---
-    # Capsules let us eat ghosts, reward being close to them
     capsuleScore = 0
     if capsules:
         closestCapsule = min(manhattanDistance(pos, c) for c in capsules)
         capsuleScore = 5.0 / closestCapsule
 
-    return score + closestFoodScore + remainingFoodPenalty + ghostScore + capsuleScore
-
+    return score + foodScore + remainingFoodPenalty + ghostScore + capsuleScore
 
 better = betterEvaluationFunction
