@@ -180,8 +180,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     return max(successorValues)
                 else:
                     return min(successorValues)
-            # root needs to return an action, not a score
-            # pacman moves at root so recursive calls start at ghost (index 1)
+        # root needs to return an action, not a score
+        # pacman moves at root so recursive calls start at ghost (index 1)
         actions = gameState.getLegalActions(0)
         return max(actions, key=lambda a: minimax(gameState.generateSuccessor(0, a), 0, 1))
 
@@ -281,7 +281,7 @@ def betterEvaluationFunction(currentGameState: GameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION:
     
     I evaluate states using a combination of the current score,
     distance to the nearest food, how much food is left, ghost proximity
@@ -306,7 +306,7 @@ def betterEvaluationFunction(currentGameState: GameState):
     ghostStates = currentGameState.getGhostStates()
     capsules = currentGameState.getCapsules()
     score = currentGameState.getScore()
-    
+
     # pull pacman toward nearest food using reciprocal distance
     closestFood = min(manhattanDistance(pos, f) for f in foodList)
     foodScore = 10.0 / closestFood
