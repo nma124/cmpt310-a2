@@ -205,31 +205,28 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 nextAgent = (agentIndex + 1) % state.getNumAgents()
                 nextDepth = depth + 1 if nextAgent == 0 else depth
                 
-                if agentIndex == 0:  # Pacman MAX node
+                if agentIndex == 0:  
                     value = float('-inf')
                     for action in actions:
                         successor = state.generateSuccessor(agentIndex, action)
                         value = max(value, alphabeta(successor, nextDepth, nextAgent, alpha, beta))
-                        
-                        # If we found something better than what ghost allows, stop
+                        # ghost wont let us get more than beta so stop looking                                                
                         if value > beta:
                             return value
                         alpha = max(alpha, value)
                     return value
                 
-                else:  # Ghost MIN node
+                else:  
                     value = float('inf')
                     for action in actions:
                         successor = state.generateSuccessor(agentIndex, action)
                         value = min(value, alphabeta(successor, nextDepth, nextAgent, alpha, beta))
-                        
-                        # If we found something worse than what pacman already has, stop
+                        # pacman already has alpha elsewhere so this branch is useless                        
                         if value < alpha:
                             return value
                         beta = min(beta, value)
                     return value
             
-        # Root call - start with worst possible alpha/beta
         actions = gameState.getLegalActions(0)
         bestAction = None
         alpha = float('-inf')
