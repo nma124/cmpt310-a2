@@ -263,7 +263,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-                #util.raiseNotDefined()
+        #util.raiseNotDefined()
         def expectimax(state, depth, agentIndex):
                 # Base case identical to minimax
                 if state.isWin() or state.isLose() or depth == self.depth:
@@ -295,7 +295,48 @@ def betterEvaluationFunction(currentGameState: GameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Extract useful information from current state
+    pos = currentGameState.getPacmanPosition()
+    foodGrid = currentGameState.getFood()
+    foodList = foodGrid.asList()
+    ghostStates = currentGameState.getGhostStates()
+    capsules = currentGameState.getCapsules()
+    score = currentGameState.getScore()
 
-# Abbreviation
+    # Terminal states
+    if currentGameState.isWin():
+        return float('inf')
+    if currentGameState.isLose():
+        return float('-inf')
+
+    # --- Food Feature ---
+    # Closer to nearest food is better, reciprocal so closer = higher value
+    foodDistances = [manhattanDistance(pos, f) for f in foodList]
+    closestFoodScore = 10.0 / min(foodDistances)
+
+    # Penalize having lots of food remaining - we want to eat it all
+    remainingFoodPenalty = -4 * len(foodList)
+
+    # --- Ghost Features ---
+    ghostScore = 0
+    for ghost in ghostStates:
+        dist = manhattanDistance(pos, ghost.getPosition())
+        if ghost.scaredTimer > 0:
+            # Scared ghost = opportunity, get closer for more points
+            ghostScore += 200.0 / (dist + 1)
+        else:
+            # Increased radius from 3 to 5, and stronger penalty
+            if dist < 5:
+                ghostScore -= 1000.0 / (dist + 1)
+
+    # --- Capsule Feature ---
+    # Capsules let us eat ghosts, reward being close to them
+    capsuleScore = 0
+    if capsules:
+        closestCapsule = min(manhattanDistance(pos, c) for c in capsules)
+        capsuleScore = 5.0 / closestCapsule
+
+    return score + closestFoodScore + remainingFoodPenalty + ghostScore + capsuleScore
+
+
 better = betterEvaluationFunction
