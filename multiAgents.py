@@ -258,7 +258,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         #util.raiseNotDefined()
         def expectimax(state, depth, agentIndex):
-                # Base case identical to minimax
                 if state.isWin() or state.isLose() or depth == self.depth:
                     return self.evaluationFunction(state)
                 
@@ -270,13 +269,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                                             nextDepth, nextAgent) for a in actions]
                 
                 if agentIndex == 0:
-                    # Pacman still maximizes - he plays optimally
                     return max(successorValues)
                 else:
-                    # Ghosts are random so we take the average instead of minimum
-                    # Uniform distribution means each action equally likely
+                    # ghosts move randomly so expected value is just the average
                     return sum(successorValues) / len(successorValues)
-        # Root call identical to minimax
         actions = gameState.getLegalActions(0)
         return max(actions, key=lambda a: expectimax(gameState.generateSuccessor(0, a), 0, 1))
 
