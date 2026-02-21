@@ -169,21 +169,19 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 
                 actions = state.getLegalActions(agentIndex)
                 
-                # Figure out who moves next and whether a full round has completed
+                # only ++ depth once everyone has taken a turn
                 nextAgent = (agentIndex + 1) % state.getNumAgents()
                 nextDepth = depth + 1 if nextAgent == 0 else depth
                 
-                # Generate all successor values recursively
+                # recursively generate values
                 successorValues = [minimax(state.generateSuccessor(agentIndex, a), nextDepth, nextAgent) for a in actions]
                 
-                # Pacman wants to maximize, ghosts want to minimize
                 if agentIndex == 0:
                     return max(successorValues)
                 else:
                     return min(successorValues)
-            
-        # At the root we need an action not just a value
-        # Pacman already moves here so we pass agentIndex=1 to start with ghosts
+            # root needs to return an action, not a score
+            # pacman moves at root so recursive calls start at ghost (index 1)
         actions = gameState.getLegalActions(0)
         return max(actions, key=lambda a: minimax(gameState.generateSuccessor(0, a), 0, 1))
 
