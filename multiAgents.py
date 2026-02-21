@@ -28,8 +28,6 @@ class ReflexAgent(Agent):
     it in any way you see fit, so long as you don't touch our method
     headers.
     """
-
-
     def getAction(self, gameState: GameState):
         """
         You do not need to change this method, but you're welcome to.
@@ -75,7 +73,7 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        # Terminal states should be handled first - if we already won/lost no need to evaluate
+        # no point evaluating if the game is already decided
         if successorGameState.isWin():
             return float('inf')
         if successorGameState.isLose():
@@ -84,24 +82,24 @@ class ReflexAgent(Agent):
         # Get all remaining food positions
         foodList = newFood.asList()
 
-        # I want pacman to move toward the closest food pellet
-        # Using 1/distance so closer food = higher score (reciprocal relationship)
+        # reciprocal so that closer food gives a bigger boost
+        # tried just using -distance but this scales better when combining features
         closestFood = min(manhattanDistance(newPos, food) for food in foodList)
         foodScore = 10.0 / closestFood
 
-        # Handle ghosts differently based on whether theyre scared or not
+        # Handle ghosts differently based on wheather theyre scared or not
         ghostPenalty = 0
         for ghost, scaredTime in zip(newGhostStates, newScaredTimes):
             dist = manhattanDistance(newPos, ghost.getPosition())
             
             if scaredTime > 0:
-                # Ghost is scared so its actually an opportunity, chase it
+                # scared ghost is free points, so we nudge towards it
                 ghostPenalty += 100.0 / (dist + 1)
             elif dist < 5:
-                # Only care about ghosts that are actually close to us
-                # Far ghosts shouldnt affect our decision making
+                # only care about ghosts that are actually close
+                # Far ghosts shouldnt affect decision making as they dont matter
                 ghostPenalty -= 10.0 / (dist + 1)
-        # Combine everything - base score handles food eaten/time penalties already
+        # Combine everything, base score handles food eaten/time penalties already
         return successorGameState.getScore() + foodScore + ghostPenalty
 
 def scoreEvaluationFunction(currentGameState: GameState):
