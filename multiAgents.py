@@ -163,7 +163,31 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #util.raiseNotDefined()
+        def minimax(state, depth, agentIndex):
+                # Base case - stop if game is over or we've reached our depth limit
+                if state.isWin() or state.isLose() or depth == self.depth:
+                    return self.evaluationFunction(state)
+                
+                actions = state.getLegalActions(agentIndex)
+                
+                # Figure out who moves next and whether a full round has completed
+                nextAgent = (agentIndex + 1) % state.getNumAgents()
+                nextDepth = depth + 1 if nextAgent == 0 else depth
+                
+                # Generate all successor values recursively
+                successorValues = [minimax(state.generateSuccessor(agentIndex, a), nextDepth, nextAgent) for a in actions]
+                
+                # Pacman wants to maximize, ghosts want to minimize
+                if agentIndex == 0:
+                    return max(successorValues)
+                else:
+                    return min(successorValues)
+            
+        # At the root we need an action not just a value
+        # Pacman already moves here so we pass agentIndex=1 to start with ghosts
+        actions = gameState.getLegalActions(0)
+        return max(actions, key=lambda a: minimax(gameState.generateSuccessor(0, a), 0, 1))
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
