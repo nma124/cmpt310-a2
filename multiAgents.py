@@ -75,7 +75,34 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        # Terminal states should be handled first - if we already won/lost no need to evaluate
+        if successorGameState.isWin():
+            return float('inf')
+        if successorGameState.isLose():
+            return float('-inf')
+
+        # Get all remaining food positions
+        foodList = newFood.asList()
+
+        # I want pacman to move toward the closest food pellet
+        # Using 1/distance so closer food = higher score (reciprocal relationship)
+        closestFood = min(manhattanDistance(newPos, food) for food in foodList)
+        foodScore = 10.0 / closestFood
+
+        # Handle ghosts differently based on whether theyre scared or not
+        ghostPenalty = 0
+        for ghost, scaredTime in zip(newGhostStates, newScaredTimes):
+            dist = manhattanDistance(newPos, ghost.getPosition())
+            
+            if scaredTime > 0:
+                # Ghost is scared so its actually an opportunity, chase it
+                ghostPenalty += 100.0 / (dist + 1)
+            elif dist < 5:
+                # Only care about ghosts that are actually close to us
+                # Far ghosts shouldnt affect our decision making
+                ghostPenalty -= 10.0 / (dist + 1)
+        # Combine everything - base score handles food eaten/time penalties already
+        return successorGameState.getScore() + foodScore + ghostPenalty
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """
